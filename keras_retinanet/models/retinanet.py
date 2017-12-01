@@ -59,7 +59,7 @@ def default_classification_model(
         )(outputs)
         outputs = BatchNormalization(axis=-1, name='pyramid_classification_{}_bn'.format(i))(outputs)
         outputs = keras.layers.Activation('relu', name='pyramid_classification_{}_relu'.format(i))(outputs)
-        outputs=keras.layers.Dropout(0.2)(outputs)
+        outputs=keras.layers.Dropout(0.3)(outputs)
 
     outputs = keras.layers.Conv2D(
         filters=num_classes * num_anchors,
@@ -98,7 +98,7 @@ def default_regression_model(num_anchors, pyramid_feature_size=64, regression_fe
         )(outputs)
         outputs = BatchNormalization(axis=-1, name='pyramid_regression_{}_bn'.format(i))(outputs)
         outputs = keras.layers.Activation('relu', name='pyramid_regression_{}_relu'.format(i))(outputs)
-        outputs=keras.layers.Dropout(0.2)(outputs)
+        outputs=keras.layers.Dropout(0.3)(outputs)
 
     outputs = keras.layers.Conv2D(num_anchors * 4, name='pyramid_regression', **options)(outputs)
     outputs = keras.layers.Reshape((-1, 4), name='pyramid_regression_reshape')(outputs)
@@ -143,8 +143,8 @@ class AnchorParameters:
 
 
 AnchorParameters.default = AnchorParameters(
-    sizes   = [32, 64, 128, 256, 512],
-    strides = [8, 16, 32, 64, 128],
+    sizes   = [16, 32, 64, 128, 256],
+    strides = [4, 8, 16, 32, 64],
     ratios  = np.array([0.5, 1, 2], keras.backend.floatx()),
     scales  = np.array([2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)], keras.backend.floatx()),
 )

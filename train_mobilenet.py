@@ -33,20 +33,28 @@ def get_session():
     return tf.Session(config=config)
 
 
-def create_model(num_classes, weights='imagenet'):
+def create_model(num_classes, alpha =1):
     image = keras.layers.Input((None, None, 3))
-    return MobileNetRetinaNet(image, num_classes=num_classes)
+    return MobileNetRetinaNet(image, num_classes=num_classes, alpha=alpha)
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Simple training script for object detection from a CSV file.')
-    parser.add_argument('train_path', help='Path to CSV file for training (required)')
-    parser.add_argument('classes', help='Path to a CSV file containing class label mapping (required)')
-    parser.add_argument('--val_path', help='Path to CSV file for validation (optional')
-    parser.add_argument('--weights', help='Weights to use for initialization (defaults to ImageNet).',
-                        default='imagenet')
-    parser.add_argument('--batch-size', help='Size of the batches.', default=1, type=int)
-    parser.add_argument('--gpu', help='Id of the GPU to use (as reported by nvidia-smi).')
+    parser = argparse.ArgumentParser(
+        description='Simple training script for object detection from a CSV file.')
+    parser.add_argument('--train_path', help='Path to CSV file for training',
+                        default='/home/aragon/workspace/datasets/obj_detection/train.csv')
+    parser.add_argument('--classes', help='Path to a CSV file containing class label mapping',
+                        default='/home/aragon/workspace/datasets/obj_detection/classes.csv')
+    parser.add_argument('--val_path', help='Path to CSV file for validation (optional',
+                        default='/home/aragon/workspace/datasets/obj_detection/val.csv')
+    parser.add_argument(
+        '--save', help='Weights to use for initialization (defaults to ImageNet).', default='retinanet')
+    parser.add_argument(
+        '--batch-size', help='Size of the batches.', default=1, type=int)
+    parser.add_argument(
+            '--alpha', help='alpha in Mobilenet.', default=1, type=float)
+    parser.add_argument(
+        '--gpu', help='Id of the GPU to use (as reported by nvidia-smi).')
 
     return parser.parse_args()
 
@@ -89,7 +97,7 @@ if __name__ == '__main__':
 
     # create the model
     print('Creating model, this may take a second...')
-    model = create_model(num_classes=num_classes, weights=args.weights)
+    model = create_model(num_classes=num_classes, alpha=args.alpha)
 
     # compile model (note: set loss to None since loss is added inside layer)
     model.compile(
@@ -97,7 +105,7 @@ if __name__ == '__main__':
             'regression'    : keras_retinanet.losses.smooth_l1(),
             'classification': keras_retinanet.losses.focal()
         },
-        optimizer=keras.optimizers.adam(lr=1e-4, clipnorm=0.1)
+        optimizer=keras.optimizers.adam(lr=2e-5, clipnorm=0.001)
     )
 
     # print model summary
@@ -113,10 +121,10 @@ if __name__ == '__main__':
         validation_data=test_generator,
         validation_steps=test_generator.size() // args.batch_size if test_generator else 0,
         callbacks=[
-            keras.callbacks.ModelCheckpoint(os.path.join('snapshots', 'mobilenet_csv_best.h5'), monitor='val_loss', verbose=1, save_best_only=True),
+            keras.callbacks.ModelCheckpoint(os.path.join('snapshots', 'mobilenet_{}_best.h5'.format(args.save)), monitor='val_loss', verbose=1, save_best_only=True),
             keras.callbacks.ReduceLROnPlateau(monitor='loss', factor=0.1, patience=2, verbose=1, mode='auto', epsilon=0.0001, cooldown=0, min_lr=0),
         ],
     )
 
     # store final result too
-    model.save('snapshots/mobilenet_csv_final.h5')
+    model.save('snapshots/mobilenet_{}_final.h5'.format(args.save))

@@ -33,22 +33,31 @@ def get_session():
     return tf.Session(config=config)
 
 
-def create_model(num_classes, weights='imagenet'):
+def create_model(num_classes, num_features = 64):
     image = keras.layers.Input((None, None, 3))
-    return ResNet18RetinaNet(image, num_classes=num_classes, weights=weights)
+    return ResNet18RetinaNet(image, num_classes=num_classes, features=num_features)
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Simple training script for object detection from a CSV file.')
-    parser.add_argument('train_path', help='Path to CSV file for training (required)')
-    parser.add_argument('classes', help='Path to a CSV file containing class label mapping (required)')
-    parser.add_argument('--val_path', help='Path to CSV file for validation (optional')
-    parser.add_argument('--weights', help='Weights to use for initialization (defaults to ImageNet).',
-                        default='imagenet')
-    parser.add_argument('--batch-size', help='Size of the batches.', default=1, type=int)
-    parser.add_argument('--gpu', help='Id of the GPU to use (as reported by nvidia-smi).')
+    parser = argparse.ArgumentParser(
+        description='Simple training script for object detection from a CSV file.')
+    parser.add_argument('--train_path', help='Path to CSV file for training',
+                        default='/home/aragon/workspace/datasets/obj_detection/train.csv')
+    parser.add_argument('--classes', help='Path to a CSV file containing class label mapping',
+                        default='/home/aragon/workspace/datasets/obj_detection/classes.csv')
+    parser.add_argument('--val_path', help='Path to CSV file for validation (optional',
+                        default='/home/aragon/workspace/datasets/obj_detection/val.csv')
+    parser.add_argument(
+        '--save', help='Weights to use for initialization (defaults to ImageNet).', default='retinanet')
+    parser.add_argument(
+        '--batch-size', help='Size of the batches.', default=1, type=int)
+    parser.add_argument(
+            '--fsize', help='ResNet feature size', default=64, type=int)
+    parser.add_argument(
+        '--gpu', help='Id of the GPU to use (as reported by nvidia-smi).')
 
     return parser.parse_args()
+
 
 if __name__ == '__main__':
     # parse arguments
@@ -89,7 +98,7 @@ if __name__ == '__main__':
 
     # create the model
     print('Creating model, this may take a second...')
-    model = create_model(num_classes=num_classes, weights=args.weights)
+    model = create_model(num_classes=num_classes, num_features=args.fsize)
 
     # compile model (note: set loss to None since loss is added inside layer)
     model.compile(
@@ -97,7 +106,8 @@ if __name__ == '__main__':
             'regression'    : keras_retinanet.losses.smooth_l1(),
             'classification': keras_retinanet.losses.focal()
         },
-        optimizer=keras.optimizers.adam(lr=1e-4, clipnorm=0.001)
+        # optimizer=keras.optimizers.adam(lr=1e-5, clipnorm=1e-4)
+        optimizer=keras.optimizers.RMSprop(lr=1e-5)
     )
 
     # print model summary
@@ -107,16 +117,16 @@ if __name__ == '__main__':
     model.fit_generator(
         generator=train_generator,
         steps_per_epoch=train_generator.size() // args.batch_size,
-        epochs=80,
+        epochs=100,
         verbose=1,
         max_queue_size=20,
         validation_data=test_generator,
         validation_steps=test_generator.size() // args.batch_size if test_generator else 0,
         callbacks=[
-            keras.callbacks.ModelCheckpoint(os.path.join('snapshots', 'resnet18_csv_best_bn.h5'), monitor='val_loss', verbose=1, save_best_only=True),
+            keras.callbacks.ModelCheckpoint(os.path.join('snapshots', 'resnet18_{}_best.h5'.format(args.save)), monitor='val_loss', verbose=1, save_best_only=True),
             keras.callbacks.ReduceLROnPlateau(monitor='loss', factor=0.1, patience=2, verbose=1, mode='auto', epsilon=0.0001, cooldown=0, min_lr=0),
         ],
     )
 
     # store final result too
-    model.save('snapshots/resnet18_csv_final_bn.h5')
+    model.save('snapshots/resnet18_{}_final.h5'.format(args.save))

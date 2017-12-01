@@ -466,24 +466,6 @@ def MobileNet(input_shape=None,
     x = _depthwise_conv_block(x, 1024, alpha, depth_multiplier, block_id=13)
     outputs.append(x)
 
-    # if include_top:
-    #     if K.image_data_format() == 'channels_first':
-    #         shape = (int(1024 * alpha), 1, 1)
-    #     else:
-    #         shape = (1, 1, int(1024 * alpha))
-
-    #     x = GlobalAveragePooling2D()(x)
-    #     x = Reshape(shape, name='reshape_1')(x)
-    #     x = Dropout(dropout, name='dropout')(x)
-    #     x = Conv2D(classes, (1, 1),
-    #                padding='same', name='conv_preds')(x)
-    #     x = Activation('softmax', name='act_softmax')(x)
-    #     x = Reshape((classes,), name='reshape_2')(x)
-    # else:
-    #     if pooling == 'avg':
-    #         x = GlobalAveragePooling2D()(x)
-    #     elif pooling == 'max':
-    #         x = GlobalMaxPooling2D()(x)
 
     # Ensure that the model takes into account
     # any potential predecessors of `input_tensor`.
@@ -647,10 +629,10 @@ def _depthwise_conv_block(inputs, pointwise_conv_filters, alpha,
     return Activation(relu6, name='conv_pw_%d_relu' % block_id)(x)
 
 
-def MobileNetRetinaNet(inputs, num_classes, *args, **kwargs):
+def MobileNetRetinaNet(inputs, num_classes, alpha, *args, **kwargs):
     image = inputs
 
-    mobilenet = MobileNet(input_tensor = image, alpha=0.75)
+    mobilenet = MobileNet(input_tensor = image, alpha=alpha)
 
     model = keras_retinanet.models.retinanet.retinanet_bbox(
         inputs=inputs, num_classes=num_classes, backbone=mobilenet, *args, **kwargs)
