@@ -20,6 +20,7 @@ import keras_retinanet.layers
 import keras_retinanet.losses
 from keras.layers import BatchNormalization
 import numpy as np
+import keras_resnet
 
 custom_objects = {
     'UpsampleLike'          : keras_retinanet.layers.UpsampleLike,
@@ -29,6 +30,7 @@ custom_objects = {
     'Anchors'               : keras_retinanet.layers.Anchors,
     '_smooth_l1'            : keras_retinanet.losses.smooth_l1(),
     '_focal'                : keras_retinanet.losses.focal(),
+    'BatchNormalization'    : keras_resnet.layers.BatchNormalization,
 }
 
 

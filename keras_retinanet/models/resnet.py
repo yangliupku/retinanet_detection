@@ -43,8 +43,7 @@ def ResNet50RetinaNet(inputs, num_classes, weights='imagenet', *args, **kwargs):
     model.load_weights(weights_path, by_name=True)
     return model
 
-
-def ResNet18RetinaNet(inputs, num_classes, features, weights='imagenet', *args, **kwargs):
+def ResNet18RetinaNet(inputs, num_classes, features=64, weights='imagenet', *args, **kwargs):
     image = inputs
 
     resnet = keras_resnet.models.ResNet18(

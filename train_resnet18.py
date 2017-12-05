@@ -106,8 +106,8 @@ if __name__ == '__main__':
             'regression'    : keras_retinanet.losses.smooth_l1(),
             'classification': keras_retinanet.losses.focal()
         },
-        # optimizer=keras.optimizers.adam(lr=1e-5, clipnorm=1e-4)
-        optimizer=keras.optimizers.RMSprop(lr=1e-5)
+        optimizer=keras.optimizers.adam(lr=1e-5, clipnorm=1e-4)
+        # optimizer=keras.optimizers.RMSprop(lr=1e-5)
     )
 
     # print model summary
