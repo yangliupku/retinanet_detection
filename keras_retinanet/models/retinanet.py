@@ -145,8 +145,8 @@ class AnchorParameters:
 
 
 AnchorParameters.default = AnchorParameters(
-    sizes   = [16, 32, 64, 128, 256],
-    strides = [4, 8, 16, 32, 64],
+    sizes   = [32, 64, 128, 256, 512],
+    strides = [8, 16, 32, 64, 128],
     ratios  = np.array([0.5, 1, 2], keras.backend.floatx()),
     scales  = np.array([2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)], keras.backend.floatx()),
 )
@@ -164,7 +164,7 @@ def __build_model_pyramid(name, model, features):
 
 
 def __build_pyramid(models, features):
-    return [__build_model_pyramid(n, m, features) for n, m in models]
+    return [__build_model_pyramid(name, model, features) for name, model in models]
 
 
 def __build_anchors(anchor_parameters, features):

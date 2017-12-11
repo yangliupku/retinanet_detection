@@ -369,52 +369,11 @@ def MobileNet(input_shape=None,
         raise ValueError('If using `weights` as ImageNet with `include_top` '
                          'as true, `classes` should be 1000')
 
-    # Determine proper input shape and default size.
-    # if input_shape is None:
-    #     default_size = 224
-    # else:
-    #     if K.image_data_format() == 'channels_first':
-    #         rows = input_shape[1]
-    #         cols = input_shape[2]
-    #     else:
-    #         rows = input_shape[0]
-    #         cols = input_shape[1]
-
-    #     if rows == cols and rows in [128, 160, 192, 224]:
-    #         default_size = rows
-    #     else:
-    #         default_size = 224
-
-    # input_shape = _obtain_input_shape(input_shape,
-    #                                   default_size=default_size,
-    #                                   min_size=32,
-    #                                   data_format=K.image_data_format(),
-    #                                   require_flatten=include_top,
-    #                                   weights=weights)
-
     if K.image_data_format() == 'channels_last':
         row_axis, col_axis = (0, 1)
     else:
         row_axis, col_axis = (1, 2)
-    # rows = input_shape[row_axis]
-    # cols = input_shape[col_axis]
-
-    # if weights == 'imagenet':
-    #     if depth_multiplier != 1:
-    #         raise ValueError('If imagenet weights are being loaded, '
-    #                          'depth multiplier must be 1')
-
-    #     if alpha not in [0.25, 0.50, 0.75, 1.0]:
-    #         raise ValueError('If imagenet weights are being loaded, '
-    #                          'alpha can be one of'
-    #                          '`0.25`, `0.50`, `0.75` or `1.0` only.')
-
-    #     if rows != cols or rows not in [128, 160, 192, 224]:
-    #         raise ValueError('If imagenet weights are being loaded, '
-    #                          'input must have a static square shape (one of '
-    #                          '(128,128), (160,160), (192,192), or (224, 224)).'
-    #                          ' Input shape provided = %s' % (input_shape,))
-
+ 
     if K.image_data_format() != 'channels_last':
         warnings.warn('The MobileNet family of models is only available '
                       'for the input data format "channels_last" '
@@ -476,36 +435,7 @@ def MobileNet(input_shape=None,
 
     # Create model.
     model = Model(inputs= inputs, outputs= outputs , name='mobilenet')
-    # load weights
-    # if weights == 'imagenet':
-    #     if K.image_data_format() == 'channels_first':
-    #         raise ValueError('Weights for "channels_last" format '
-    #                          'are not available.')
-    #     if alpha == 1.0:
-    #         alpha_text = '1_0'
-    #     elif alpha == 0.75:
-    #         alpha_text = '7_5'
-    #     elif alpha == 0.50:
-    #         alpha_text = '5_0'
-    #     else:
-    #         alpha_text = '2_5'
 
-    #     if include_top:
-    #         model_name = 'mobilenet_%s_%d_tf.h5' % (alpha_text, rows)
-    #         weigh_path = BASE_WEIGHT_PATH + model_name
-    #         weights_path = get_file(model_name,
-    #                                 weigh_path,
-    #                                 cache_subdir='models')
-    #     else:
-    #         model_name = 'mobilenet_%s_%d_tf_no_top.h5' % (alpha_text, rows)
-    #         weigh_path = BASE_WEIGHT_PATH + model_name
-    #         weights_path = get_file(model_name,
-    #                                 weigh_path,
-    #                                 cache_subdir='models')
-    #     model.load_weights(weights_path)
-
-    # if old_data_format:
-    #     K.set_image_data_format(old_data_format)
     return model
 
 

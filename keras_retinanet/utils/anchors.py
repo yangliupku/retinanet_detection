@@ -73,7 +73,7 @@ def anchors_for_shape(
     if pyramid_levels is None:
         pyramid_levels = [3, 4, 5, 6, 7]
     if strides is None:
-        strides = [2 ** x for x in pyramid_levels]
+        strides = [2 ** (x) for x in pyramid_levels]
     if sizes is None:
         sizes = [2 ** (x + 2) for x in pyramid_levels]
     if ratios is None:

@@ -21,11 +21,11 @@ import keras
 import keras.preprocessing.image
 
 import tensorflow as tf
-
+import pickle
 from keras_retinanet.models.mobilenet import MobileNetRetinaNet
 from keras_retinanet.preprocessing.csv_generator import CSVGenerator
 import keras_retinanet
-
+import matplotlib.pyplot as plt
 
 def get_session():
     config = tf.ConfigProto()
@@ -41,31 +41,19 @@ def create_model(num_classes, alpha =1):
 def parse_args():
     parser = argparse.ArgumentParser(
         description='Simple training script for object detection from a CSV file.')
-    parser.add_argument('--train_path', help='Path to CSV file for training',
-                        default='/home/aragon/workspace/datasets/obj_detection/train.csv')
-    parser.add_argument('--classes', help='Path to a CSV file containing class label mapping',
-                        default='/home/aragon/workspace/datasets/obj_detection/classes.csv')
-    parser.add_argument('--val_path', help='Path to CSV file for validation (optional',
-                        default='/home/aragon/workspace/datasets/obj_detection/val.csv')
-    parser.add_argument(
-        '--save', help='Weights to use for initialization (defaults to ImageNet).', default='retinanet')
     parser.add_argument(
         '--batch-size', help='Size of the batches.', default=1, type=int)
     parser.add_argument(
-            '--alpha', help='alpha in Mobilenet.', default=1, type=float)
-    parser.add_argument(
-        '--gpu', help='Id of the GPU to use (as reported by nvidia-smi).')
-
+        '--alpha', help='alpha in Mobilenet.', default=1, type=float)
     return parser.parse_args()
 
 if __name__ == '__main__':
     # parse arguments
     args = parse_args()
 
-    # optionally choose specific GPU
-    if args.gpu:
-        os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
-    keras.backend.tensorflow_backend.set_session(get_session())
+    train_path = "/home/aragon/workspace/datasets/obj_detection_rdc2/train_linux.csv"
+    classes = "/home/aragon/workspace/datasets/obj_detection_rdc2/classes.csv"
+    val_path = "/home/aragon/workspace/datasets/obj_detection_rdc2/val_linux.csv"
 
     # create image data generator objects
     train_image_data_generator = keras.preprocessing.image.ImageDataGenerator(
@@ -74,32 +62,29 @@ if __name__ == '__main__':
 
     # create a generator for training data
     train_generator = CSVGenerator(
-        csv_data_file=args.train_path,
-        csv_class_file=args.classes,
+        csv_data_file=train_path,
+        csv_class_file=classes,
         image_data_generator=train_image_data_generator,
         batch_size=args.batch_size
     )
 
-    if args.val_path:
-        test_image_data_generator = keras.preprocessing.image.ImageDataGenerator()
+    test_image_data_generator = keras.preprocessing.image.ImageDataGenerator()
 
-        # create a generator for testing data
-        test_generator = CSVGenerator(
-            csv_data_file=args.val_path,
-            csv_class_file=args.classes,
-            image_data_generator=test_image_data_generator,
-            batch_size=args.batch_size
-        )
-    else:
-        test_generator = None
+    # create a generator for testing data
+    test_generator = CSVGenerator(
+        csv_data_file=val_path,
+        csv_class_file=classes,
+        image_data_generator=test_image_data_generator,
+        batch_size=args.batch_size
+    )
 
     num_classes = train_generator.num_classes()
 
     # create the model
+
     print('Creating model, this may take a second...')
     model = create_model(num_classes=num_classes, alpha=args.alpha)
 
-    # compile model (note: set loss to None since loss is added inside layer)
     model.compile(
         loss={
             'regression'    : keras_retinanet.losses.smooth_l1(),
@@ -111,20 +96,41 @@ if __name__ == '__main__':
     # print model summary
     print(model.summary())
 
+    model_name = "mobilenet_a{}_s8_rdc2".format(args.alpha)
+    model_dir = os.path.join("snapshots",model_name)
+    if not os.path.exists(model_dir):
+        os.makedirs(model_dir)
+
+    checkpoint_fname = os.path.join(model_dir, "{}_best.h5".format(model_name))
+    final_save_fname = os.path.join(model_dir, "{}_final.h5".format(model_name))
+
+
     # start training
-    model.fit_generator(
+    history= model.fit_generator(
         generator=train_generator,
-        steps_per_epoch=train_generator.size() // args.batch_size,
+        steps_per_epoch=train_generator.size() // (args.batch_size),
         epochs=100,
         verbose=1,
         max_queue_size=20,
         validation_data=test_generator,
-        validation_steps=test_generator.size() // args.batch_size if test_generator else 0,
+        validation_steps=test_generator.size() // (args.batch_size),
         callbacks=[
-            keras.callbacks.ModelCheckpoint(os.path.join('snapshots', 'mobilenet_{}_best.h5'.format(args.save)), monitor='val_loss', verbose=1, save_best_only=True),
+            keras.callbacks.ModelCheckpoint(checkpoint_fname, monitor='val_loss', verbose=1, save_best_only=True),
             keras.callbacks.ReduceLROnPlateau(monitor='loss', factor=0.1, patience=2, verbose=1, mode='auto', epsilon=0.0001, cooldown=0, min_lr=0),
+            keras.callbacks.EarlyStopping(
+                monitor='val_loss', min_delta=0, patience=10, verbose=0, mode='auto')
         ],
     )
+    with open(os.path.join(model_dir,"train.p"),"wb") as f:
+        pickle.dump(history.history, f)
 
-    # store final result too
-    model.save('snapshots/mobilenet_{}_final.h5'.format(args.save))
+    model.save(final_save_fname)
+
+    plt.plot(history.history["loss"],label='train_loss')
+    plt.plot(history.history["val_loss"], label='val_loss')
+    plt.legend()
+    plt.xlabel("epochs")
+    plt.ylabel("loss")
+    plt.grid(1)
+    plt.savefig(os.path.join(model_dir,"training.png"))
+
