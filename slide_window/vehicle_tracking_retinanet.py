@@ -88,8 +88,6 @@ class car_tracker(object):
         self.recent_heatmap = []
         self.current_heatmap = None
         self.img_shape = []
-        self.ystart = 360
-        self.ystop = 720
         self.model = None 
         self.label_list= [0,1]
         self.antn_img = []
@@ -101,6 +99,7 @@ class car_tracker(object):
     def car_search_retinanet(self, img):
         scale = self.scale
         bb_list = []
+        img_scaled = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
         img_scaled = cv2.resize(img, None, fx=scale, fy=scale)
         _, _, detections = self.model.predict_on_batch(
             np.expand_dims(img_scaled, axis=0))

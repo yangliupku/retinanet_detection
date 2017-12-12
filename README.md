@@ -32,14 +32,14 @@ The models being benchmarked are
 | Model    | AP50 (car) | AP50 (truck) | AP50 (pedestrian) |# of parameters|CPU inference <br/>(s/frame)| GPU inference <br/>(s/frame)|
 | ------------- |:-------------:|:-----:|:-----:|:-----:|:-----:|:-----:|
 | HOG      | 24.6 | -| - |-|6.9|
-| RetinaNet-ResNet50 <br />pre-trained on COCO     | 71.8 |53.4  |   32.4 | 37.4| |0.14|
-| RetinaNet-ResNet18-64 | 62.3 |35.1 |22.7 | 12.0 | 1.4|0.1|
-| RetinaNet-ResNet18-48 | 62.0 |36.3 |11.8 | 7.0 |1.2|0.09|
-| RetinaNet-ResNet18-32 | 66.7 |37.0 |25.6 | 3.4 |0.97|0.09
-| RetinaNet-MobileNet-1 | 67.6 |42.3 |20 | 4.4 | 1.1| 0.1|
-| RetinaNet-MobileNet-0.75 | 62.8 |46.8 |16.6 | 2.8 | 1.0 | 0.07|
-| RetinaNet-MobileNet-0.5 | 57.9 |47.8 |40 | 1.6 | 0.77 | 0.055|
-| RetinaNet-MobileNet-0.25 |63.7|45.7 |33.3 | 0.84 |0.54| 0.05| 
+| RetinaNet-ResNet50 <br />pre-trained on COCO     | 71.8 |53.4  |   32.4 | 37.4|2.0|0.14|
+| RetinaNet-ResNet18-64 | 66.7 |54.1 |27.2 | 12.0 | 1.4|0.1|
+| RetinaNet-ResNet18-48 | 66.1 |51.0 |18.8 | 7.0 |1.2|0.09|
+| RetinaNet-ResNet18-32 | 71.9 |55.2 |34.7 | 3.4 |0.97|0.09
+| RetinaNet-MobileNet-1 | 73.3 |54.6 |42.4 | 4.4 | 1.1| 0.1|
+| RetinaNet-MobileNet-0.75 | 67.6 |57.2 |29.6 | 2.8 | 1.0 | 0.07|
+| RetinaNet-MobileNet-0.5 | 65.3 |55.2 |36.3 | 1.6 | 0.77 | 0.055|
+| RetinaNet-MobileNet-0.25 |67.6|54.1 |38.2 | 0.84 |0.54| 0.05| 
 
 ### Example detection result
 ![images][image3]

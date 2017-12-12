@@ -61,7 +61,7 @@ class img_frame(object):
             return
 
     def get_bb_pred(self, predictor):
-        img = mpimg.imread(self.frame_name)
+        img = cv2.imread(self.frame_name)
         self.bb_pred = predictor(img)
         return
 
