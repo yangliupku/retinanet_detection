@@ -55,9 +55,14 @@ Here's the result of running RetinaNet-MobileNet-0.25 on a dash camera video
 
 <img src="./img/video_out_mobilenet_0.25.gif" width="720"/>
 
+## Appendix
+
+The following graph shows the structure of feature pyramid net (FPN) built on top of ResNet backbone. 
+![images][image5]
 
 
-
+The following graph showes the structure of regress and classification subnet. 
+![images][image6]
 
 
 
@@ -68,3 +73,6 @@ Here's the result of running RetinaNet-MobileNet-0.25 on a dash camera video
 [image2]: ./img/figure2_dataset_cat.png 
 [image3]: ./img/figure3_example_mobilenet0.25.png
 [image4]: ./img/figure4_example_coco.png
+[image5]: ./img/figure5_retinanet_structure.png
+[image6]: ./img/figure6_subnet.png
+
